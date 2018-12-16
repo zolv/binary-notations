@@ -27,11 +27,9 @@ public class Algorithm {
 
         final Number candidateInGivenBase = this.candidate.getBase() == i ? this.candidate
             : new Number(this.candidate.getValue(), i);
+
         if (!candidateInGivenBase.hasBinaryRepresentation()) {
-          System.out
-              .println("    It does not have binary representation. Skipping some numbers...");
           final Number nextOne = candidateInGivenBase.getNextCandidate();
-          System.out.println("    Next one: \n" + nextOne.toString());
           this.candidate = new Number(nextOne.getValue(), this.base);
           wasBreak = true;
           break;
