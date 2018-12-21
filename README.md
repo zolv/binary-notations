@@ -74,7 +74,6 @@ Please notice: instead of checking all 82000 (actually 81996) numbers, we need t
 
 In Numberphile's video, it is mentioned They checked all numbers with 2000 digits long.
 Using this algorithm, just in some hours, I checked all numbers (by possibility of skipping) up to 52792 decimal digits.
-You can check last checked number in [last-checked.txt](src/main/resources/last-checked.txt) file.
 
 ## Notes:
 
