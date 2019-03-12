@@ -8,8 +8,8 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.Reader;
 import java.math.BigInteger;
-import java.time.OffsetDateTime;
-import java.time.format.DateTimeFormatter;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ExecutionException;
@@ -21,7 +21,9 @@ public class Searcher {
 
 	private static final String LAST_CHECKED_FILE_NAMES_PREFIX = "last-checked-";
 	private static final String LAST_CHECKED_STARTING_POINT_FILE_NAME = "src/main/resources/last-checked.txt";
-	private static final String DEFAULT_STARTING_POINT = "82001";
+	private static final String DEFAULT_STARTING_POINT = "82000";
+	private static final int LOG_PERIOD = 15 * 60 * 1000;
+	private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss-SSS");
 
 	public static void main(String[] args) throws InterruptedException, ExecutionException {
 
@@ -44,10 +46,9 @@ public class Searcher {
 			}
 
 		};
-		timer.schedule(consoleLogger, 0, 300000);
+		timer.schedule(consoleLogger, 0, LOG_PERIOD);
 
-		final String fileName = LAST_CHECKED_FILE_NAMES_PREFIX
-				+ DateTimeFormatter.ISO_DATE_TIME.format(OffsetDateTime.now()) + ".txt";
+		final String fileName = LAST_CHECKED_FILE_NAMES_PREFIX + sdf.format(new Date()) + ".txt";
 		final TimerTask fileLogger = new TimerTask() {
 
 			@Override
@@ -56,9 +57,12 @@ public class Searcher {
 
 			}
 		};
-		timer.schedule(fileLogger, 0, 300000);
+		timer.schedule(fileLogger, 0, LOG_PERIOD);
 
 		System.out.println("Result of searching: " + searcher.get().getDigits());
+
+		logDetailsToConsole(algorithm);
+		logDetailsToFiles(algorithm, fileName);
 		timer.cancel();
 		es.shutdown();
 	}
@@ -78,7 +82,7 @@ public class Searcher {
 		return null;
 	}
 
-	private static void logDetailsToConsole(final Algorithm algorithm) {
+	private static synchronized void logDetailsToConsole(final Algorithm algorithm) {
 		System.out.println("Candidate: ");
 		final Number candidate = algorithm.getCandidate();
 		final BigInteger value = candidate.getValue();
@@ -92,7 +96,7 @@ public class Searcher {
 		System.out.println("  2: " + value.toString(2));
 	}
 
-	private static void logDetailsToFiles(final Algorithm algorithm, final String fileName) {
+	private static synchronized void logDetailsToFiles(final Algorithm algorithm, final String fileName) {
 		final File fileFull = new File(fileName);
 		final File file = new File(LAST_CHECKED_STARTING_POINT_FILE_NAME);
 		try (PrintWriter pwFull = new PrintWriter(fileFull); PrintWriter pw = new PrintWriter(file)) {
