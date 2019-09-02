@@ -6,6 +6,10 @@ public class Algorithm {
 
 	private final int base;
 	private Number candidate;
+	
+	private int digits;
+	private int digitsTotal;
+	
 
 	public Algorithm(int base) {
 		this(base, new BigInteger("2"));
