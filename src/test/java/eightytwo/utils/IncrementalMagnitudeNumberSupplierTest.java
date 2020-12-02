@@ -3,7 +3,7 @@ package eightytwo.utils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import eightytwo.NotationalNumber;
+import eightytwo.model.NotationalNumber;
 
 class IncrementalMagnitudeNumberSupplierTest {
 

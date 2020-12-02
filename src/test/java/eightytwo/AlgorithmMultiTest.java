@@ -12,6 +12,8 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
+import eightytwo.model.MagnitudeResult;
+import eightytwo.model.NotationalNumber;
 import eightytwo.utils.IncrementalMagnitudeNumberSupplier;
 import eightytwo.utils.MagnitudeRandeContinueCondition;
 import lombok.extern.slf4j.Slf4j;
@@ -20,9 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 public class AlgorithmMultiTest {
   IncrementalMagnitudeNumberSupplier magnitudeNumberSupplier;
 
-  @Mock Consumer<NotationalNumber> resultConsumerMock;
-
-  @Mock Consumer<NotationalNumber> failsConsumerMock;
+  @Mock Consumer<MagnitudeResult> resultConsumerMock;
 
   private BooleanSupplier continueCondition;
 
@@ -39,10 +39,9 @@ public class AlgorithmMultiTest {
      * Given
      */
     final AlgorithmMulti algorithm =
-        new AlgorithmMulti(2, 1, null, resultConsumerMock, failsConsumerMock, continueCondition, 1);
+        new AlgorithmMulti(2, 1, null, resultConsumerMock, continueCondition, 1);
     algorithm.search();
-    Mockito.verify(resultConsumerMock, Mockito.times(1))
-        .accept(Mockito.eq(new NotationalNumber("2")));
+    Mockito.verify(resultConsumerMock, Mockito.times(1)).accept(Mockito.any());
   }
 
   @Test
@@ -50,16 +49,24 @@ public class AlgorithmMultiTest {
     /*
      * Given
      */
-    ArgumentCaptor<NotationalNumber> valueCapture = ArgumentCaptor.forClass(NotationalNumber.class);
+    ArgumentCaptor<MagnitudeResult> valueCapture = ArgumentCaptor.forClass(MagnitudeResult.class);
     /*
      * When
      */
     final AlgorithmMulti algorithm =
-        new AlgorithmMulti(3, 1, null, resultConsumerMock, failsConsumerMock, continueCondition, 1);
+        new AlgorithmMulti(3, 1, null, resultConsumerMock, continueCondition, 1);
     algorithm.search();
     Mockito.verify(resultConsumerMock, Mockito.atLeast(1)).accept(valueCapture.capture());
-    List<NotationalNumber> allValues = valueCapture.getAllValues();
-    Assertions.assertEquals(new NotationalNumber("3"), allValues);
+    List<MagnitudeResult> allValues = valueCapture.getAllValues();
+    Assertions.assertEquals(1, allValues.size());
+    allValues
+        .stream()
+        .forEach(
+            result -> {
+              Assertions.assertEquals(-1, result.getFailPosition());
+              Assertions.assertTrue(result.getSuccess().isPresent());
+              Assertions.assertNotNull(result.getInitialCandidate());
+            });
   }
 
   @Test
@@ -67,11 +74,24 @@ public class AlgorithmMultiTest {
     /*
      * Given
      */
+    ArgumentCaptor<MagnitudeResult> valueCapture = ArgumentCaptor.forClass(MagnitudeResult.class);
+    /*
+     * When
+     */
     final AlgorithmMulti algorithm =
-        new AlgorithmMulti(4, 1, null, resultConsumerMock, failsConsumerMock, continueCondition, 1);
+        new AlgorithmMulti(4, 1, null, resultConsumerMock, continueCondition, 1);
     algorithm.search();
-    Mockito.verify(resultConsumerMock, Mockito.times(1))
-        .accept(Mockito.eq(new NotationalNumber("4")));
+    Mockito.verify(resultConsumerMock, Mockito.atLeast(1)).accept(valueCapture.capture());
+    List<MagnitudeResult> allValues = valueCapture.getAllValues();
+    Assertions.assertEquals(1, allValues.size());
+    allValues
+        .stream()
+        .forEach(
+            result -> {
+              Assertions.assertEquals(-1, result.getFailPosition());
+              Assertions.assertTrue(result.getSuccess().isPresent());
+              Assertions.assertNotNull(result.getInitialCandidate());
+            });
   }
 
   @Test
@@ -80,7 +100,7 @@ public class AlgorithmMultiTest {
      * Given
      */
     final AlgorithmMulti algorithm =
-        new AlgorithmMulti(5, 1, null, resultConsumerMock, failsConsumerMock, continueCondition, 1);
+        new AlgorithmMulti(5, 1, null, resultConsumerMock, continueCondition, 1);
     algorithm.search();
     Mockito.verify(resultConsumerMock, Mockito.times(1))
         .accept(Mockito.eq(new NotationalNumber("82000")));
@@ -92,7 +112,7 @@ public class AlgorithmMultiTest {
      * Given
      */
     final AlgorithmMulti algorithm =
-        new AlgorithmMulti(5, 5, null, resultConsumerMock, failsConsumerMock, continueCondition, 1);
+        new AlgorithmMulti(5, 5, null, resultConsumerMock, continueCondition, 1);
     algorithm.search();
     Mockito.verify(resultConsumerMock, Mockito.times(1))
         .accept(Mockito.eq(new NotationalNumber("82000")));

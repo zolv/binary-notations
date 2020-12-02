@@ -1,10 +1,11 @@
 package eightytwo;
 
-import java.util.Optional;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+import eightytwo.model.MagnitudeResult;
+import eightytwo.model.NotationalNumber;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -13,22 +14,20 @@ public class AlgorithmSingle {
   private final int initialBase;
 
   private final Function<Integer, NotationalNumber> magnitudeSupplier;
-  private final Consumer<NotationalNumber> resultConsumer;
+  private final Consumer<MagnitudeResult> resultConsumer;
   private final BooleanSupplier continueCondition;
 
-  private Consumer<NotationalNumber> failsConsumer;
+  private Consumer<MagnitudeResult> failsConsumer;
 
   public AlgorithmSingle(
       int initialBase,
       Function<Integer, NotationalNumber> magnitudeNumberSupplier,
-      Consumer<NotationalNumber> resultConsumer,
-      Consumer<NotationalNumber> failsConsumer,
+      Consumer<MagnitudeResult> resultConsumer,
       BooleanSupplier continueContidionSupplier) {
     super();
     this.initialBase = initialBase;
     this.magnitudeSupplier = magnitudeNumberSupplier;
     this.resultConsumer = resultConsumer;
-    this.failsConsumer = failsConsumer;
     this.continueCondition = continueContidionSupplier;
   }
 
@@ -36,17 +35,8 @@ public class AlgorithmSingle {
     while (continueCondition.getAsBoolean()) {
       NotationalNumber candidate = magnitudeSupplier.apply(initialBase);
       MagnitudeChecker checker = new MagnitudeChecker(initialBase, candidate);
-      Optional<NotationalNumber> minimalOpt = checker.getMinimal();
-      log.info("minimal opt: " + minimalOpt);
-      Consumer<? super NotationalNumber> ifPresentAction =
-          result -> {
-            resultConsumer.accept(result);
-          };
-      Runnable ifEmptyAction =
-          () -> {
-            failsConsumer.accept(candidate);
-          };
-      minimalOpt.ifPresentOrElse(ifPresentAction, ifEmptyAction);
+      MagnitudeResult calculationResult = checker.getMinimal();
+      resultConsumer.accept(calculationResult);
     }
   }
 }

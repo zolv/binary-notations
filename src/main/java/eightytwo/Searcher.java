@@ -15,6 +15,8 @@ import java.util.Date;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 
+import eightytwo.model.MagnitudeResult;
+import eightytwo.model.NotationalNumber;
 import eightytwo.utils.AlwaysTrueContinueCondition;
 import lombok.extern.slf4j.Slf4j;
 
@@ -40,8 +42,7 @@ public class Searcher {
 
     final int startMagnitude = Integer.valueOf(getStartValue(initialBase));
     log.info("Starting from magnitude :" + startMagnitude);
-    Consumer<NotationalNumber> resultConsumer = buildResultConsumer();
-    Consumer<NotationalNumber> failConsumer = buildFailConsumer();
+    Consumer<MagnitudeResult> resultConsumer = buildResultConsumer();
 
     AlgorithmMulti algorith =
         new AlgorithmMulti(
@@ -49,37 +50,50 @@ public class Searcher {
             startMagnitude,
             null,
             resultConsumer,
-            failConsumer,
             new AlwaysTrueContinueCondition(),
             8);
     algorith.search();
   }
 
-  private static Consumer<NotationalNumber> buildFailConsumer() {
-    return new Consumer<NotationalNumber>() {
+  private static Consumer<MagnitudeResult> buildResultConsumer() {
+    return new Consumer<MagnitudeResult>() {
 
       private LocalDateTime lastLog;
 
       @Override
-      public synchronized void accept(NotationalNumber result) {
-        final LocalDateTime now = LocalDateTime.now();
-        if (lastLog == null || lastLog.until(now, ChronoUnit.SECONDS) >= 60) {
-          int magnitude = result.getDigits(initialBase).length();
-          lastLog = now;
-          logLastCheckedMagnitude(initialBase, magnitude);
-          log.info("Failed in base " + initialBase + " at magnitude " + magnitude);
+      public synchronized void accept(MagnitudeResult result) {
+        if (result.getSuccess().isPresent()) {
+          NotationalNumber successResult = result.getSuccess().get();
+          logResultMagnitude(successResult, initialBase);
+
+          logDetailsToConsole(successResult);
+        } else {
+          final LocalDateTime now = LocalDateTime.now();
+          int magnitude = result.getInitialCandidate().getDigits(initialBase).length();
+          if (lastLog == null || lastLog.until(now, ChronoUnit.SECONDS) >= 60) {
+            lastLog = now;
+            logLastCheckedMagnitude(initialBase, magnitude);
+          }
+          log.info(
+              "Failed in base "
+                  + initialBase
+                  + " at magnitude "
+                  + magnitude
+                  + " at max position: "
+                  + result.getFailPosition());
+          //                  + " 5: "
+          //                  + result
+          //                      .getLastFail()
+          //                      .get()
+          //                      .getDigits(initialBase)
+          //                      .substring(0, result.getFailPosition() + 1)
+          //                  + ", 4: "
+          //                  + result
+          //                      .getLastFail()
+          //                      .get()
+          //                      .getDigits(4)
+          //                      .substring(0, result.getFailPosition() + 1));
         }
-      }
-    };
-  }
-
-  private static Consumer<NotationalNumber> buildResultConsumer() {
-    return new Consumer<NotationalNumber>() {
-
-      @Override
-      public synchronized void accept(NotationalNumber result) {
-        logResultMagnitude(initialBase, result.getDigits(initialBase).length(), result);
-        logDetailsToConsole(result);
       }
     };
   }
@@ -131,8 +145,8 @@ public class Searcher {
     return RESULT_FOLDER + "/" + MAGNITUDE_FILE_PREFIX + "-" + base + DOT_EXTENTION;
   }
 
-  private static synchronized void logResultMagnitude(
-      int base, final int magnitude, NotationalNumber result) {
+  private static synchronized void logResultMagnitude(NotationalNumber result, int base) {
+    final int magnitude = result.getDigits(initialBase).length();
     final File file =
         new File(
             RESULT_FOLDER

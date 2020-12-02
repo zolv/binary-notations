@@ -7,6 +7,7 @@ import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+import eightytwo.model.MagnitudeResult;
 import eightytwo.utils.IncrementalMagnitudeNumberSupplier;
 import lombok.extern.slf4j.Slf4j;
 
@@ -18,13 +19,13 @@ public class AlgorithmMulti {
   private int digits;
   private int digitsTotal;
 
-  private Consumer<NotationalNumber> resultConsumer;
+  private Consumer<MagnitudeResult> resultConsumer;
 
   private BooleanSupplier continueContidionSupplier;
 
-  private Function<Integer, eightytwo.NotationalNumber> magnitudeSupplier;
+  private Function<Integer, eightytwo.model.NotationalNumber> magnitudeSupplier;
 
-  private Consumer<NotationalNumber> failsConsumer;
+  private Consumer<MagnitudeResult> failsConsumer;
 
   private final int numberOfThreads;
 
@@ -32,14 +33,12 @@ public class AlgorithmMulti {
       int initialBase,
       int magnitude,
       BigInteger candidateToStartFrom,
-      Consumer<NotationalNumber> resultConsumer,
-      Consumer<NotationalNumber> failsConsumer,
+      Consumer<MagnitudeResult> resultConsumer,
       BooleanSupplier continueContidionSupplier,
       int numberOfThreads) {
     super();
     this.initialBase = initialBase;
     this.resultConsumer = resultConsumer;
-    this.failsConsumer = failsConsumer;
     this.continueContidionSupplier = continueContidionSupplier;
 
     magnitudeSupplier = new IncrementalMagnitudeNumberSupplier(magnitude);
@@ -54,11 +53,7 @@ public class AlgorithmMulti {
 
       final AlgorithmSingle algorithm =
           new AlgorithmSingle(
-              initialBase,
-              magnitudeSupplier,
-              resultConsumer,
-              failsConsumer,
-              continueContidionSupplier);
+              initialBase, magnitudeSupplier, resultConsumer, continueContidionSupplier);
       es.execute(() -> algorithm.search());
     }
     log.info("After threads executions");

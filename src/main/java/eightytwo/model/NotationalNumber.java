@@ -1,4 +1,4 @@
-package eightytwo;
+package eightytwo.model;
 
 import java.math.BigInteger;
 import java.util.HashMap;
@@ -63,7 +63,7 @@ public class NotationalNumber {
 
   public Optional<NotationalNumber> getNextCandidateInSameMagnitude(int base) {
     final String digitsInBase = this.getDigits(base);
-    final int firstZeroFromLeft = this.getIndexOfFailure(digitsInBase);
+    final int firstZeroFromLeft = this.getZeroToTryNext(digitsInBase);
     final int length = digitsInBase.length();
 
     final Optional<NotationalNumber> candidateOpt;
@@ -92,20 +92,34 @@ public class NotationalNumber {
    * @param digitsString
    * @return
    */
-  public int getIndexOfFailure(final String digitsString) {
+  public int getZeroToTryNext(final String digitsString) {
 
-    int current = 0;
+    int current = -1;
     for (int i = 0; i < digitsString.length(); i++) {
       final char charAt = digitsString.charAt(i);
       if (charAt == ZERO) {
         current = i;
       } else {
-        if (charAt != ONE) {
+        if (charAt != ZERO && charAt != ONE) {
           return current;
         }
       }
     }
     return current;
+  }
+
+  public int getFailIndex(final int base) {
+    return this.getFailIndex(this.getDigits(base));
+  }
+
+  public int getFailIndex(final String digitsString) {
+    for (int i = 0; i < digitsString.length(); i++) {
+      final char charAt = digitsString.charAt(i);
+      if (charAt != ONE && charAt != ZERO) {
+        return i;
+      }
+    }
+    return -1;
   }
 
   public boolean hasBinaryRepresentation(int base) {

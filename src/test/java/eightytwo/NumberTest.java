@@ -5,6 +5,8 @@ import java.math.BigInteger;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import eightytwo.model.NotationalNumber;
+
 public class NumberTest {
 
   @Test
